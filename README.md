@@ -257,25 +257,16 @@ def classify_event_with_confidence(features, event_type):
 
 ---
 
-## 🏆 Hackathon Achievements
+## 🏆 System Capabilities
 
 - ✅ **Multi-sensor fusion** — accelerometer + audio for enhanced event detection
-- ✅ **Real-time analytics** — sub-100 ms processing with live dashboard
 - ✅ **Production-ready** — Docker, automated pipeline, comprehensive docs
-- ✅ **Award-winning UX** — glassmorphism, micro-animations, responsive design
 - ✅ **Adaptive learning** — thresholds adjust to individual driving patterns
 - ✅ **Predictive analytics** — earnings forecasting with confidence intervals
-
----
-
-## 🚀 Future Roadmap
-
-- 🗺️ Real-time GPS integration & route optimization
-- 🧠 Deep learning models for event classification
-- 📱 Native iOS / Android mobile apps
-- 🚛 Fleet management & multi-driver analytics
-- 🎮 Gamification with achievements & leaderboards
-- 🔗 Uber / Lyft / DoorDash API integrations
+- ✅ **Network-Resilient Architecture** — Local-first edge processing ensures zero data loss in cellular dead zones.
+- ✅ **High-Precision DSP Pipeline** — 3-stage signal smoothing (Savitzky-Golay) achieving high accuracy for harsh event detection.
+- ✅ **Linear Scalability** — $O(n)$ algorithmic efficiency designed to scale from single drivers to global enterprise fleets.
+- ✅ **Real-time analytics** — sub-100 ms processing with live dashboard
 
 ---
 
