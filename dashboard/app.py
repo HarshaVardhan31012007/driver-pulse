@@ -630,9 +630,6 @@ class DriverPulseDashboard:
                 <div class="highlight-number">₹{self.insights.get('total_earnings', 0) * 83:,.0f}</div>
                 <div class="metric-label">Total Earnings</div>
                 <div class="metric-change positive">↑ 12.5% vs last period</div>
-                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #6c757d;">
-                    💡 Click to animate
-                </div>
             </div>
             """, unsafe_allow_html=True)
         
@@ -642,9 +639,6 @@ class DriverPulseDashboard:
                 <div class="highlight-number">{self.insights.get('avg_earnings_per_hour', 0):.1f}</div>
                 <div class="metric-label">Avg ₹/Hour</div>
                 <div class="metric-change positive">↑ 8.3% improvement</div>
-                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #6c757d;">
-                    💡 Click to animate
-                </div>
             </div>
             """, unsafe_allow_html=True)
         
@@ -654,9 +648,6 @@ class DriverPulseDashboard:
                 <div class="highlight-number">{self.insights.get('total_events', 0):,.0f}</div>
                 <div class="metric-label">Total Events</div>
                 <div class="metric-change negative">↓ 15.2% reduction</div>
-                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #6c757d;">
-                    💡 Click to animate
-                </div>
             </div>
             """, unsafe_allow_html=True)
         
@@ -667,9 +658,6 @@ class DriverPulseDashboard:
                 <div class="highlight-number">{safety_score:.1f}</div>
                 <div class="metric-label">Safety Score</div>
                 <div class="metric-change positive">↑ 5.7% better</div>
-                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #6c757d;">
-                    💡 Click to animate
-                </div>
             </div>
             """, unsafe_allow_html=True)
     
