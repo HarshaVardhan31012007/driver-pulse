@@ -125,7 +125,7 @@ python main.py --generate-sample-data
 streamlit run dashboard/app.py
 ```
 
-Open **http://localhost:8501** in your browser.
+Open **https://driver-pulse-elzbvw7ncv332mb2derpck.streamlit.app/** in your browser.
 
 ### Docker (One Command)
 
