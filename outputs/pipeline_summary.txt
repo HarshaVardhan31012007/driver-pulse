@@ -1,6 +1,6 @@
 DRIVER PULSE PIPELINE SUMMARY REPORT
 ==================================================
-Generated at: 2026-03-10 22:08:23.536954
+Generated at: 2026-03-10 22:31:25.381201
 
 EVENT DETECTION SUMMARY
 -------------------------
@@ -27,6 +27,6 @@ Average achievement probability: 1.00
 EARNINGS VELOCITY SUMMARY
 ----------------------------
 Drivers analyzed: 10
-Average earnings/hour: $27.06
-Average velocity consistency: 0.50
-Total hours worked: 1462.2
+Average earnings/hour: $26.59
+Average velocity consistency: 0.52
+Total hours worked: 1462.0
