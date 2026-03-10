@@ -19,7 +19,7 @@ warnings.filterwarnings('ignore')
 
 # Auto generate sample data for deployment
 if not os.path.exists("outputs"):
-    subprocess.run(["python", "main.py", "--generate-sample-data"])
+    os.system("python main.py --generate-sample-data")
     
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
