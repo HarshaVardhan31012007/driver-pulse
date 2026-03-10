@@ -172,6 +172,8 @@ streamlit run dashboard/app.py
 
 Open **https://driver-pulse-elzbvw7ncv332mb2derpck.streamlit.app/** in your browser.
 
+Open **Open **https://driver-pulse-elzbvw7ncv332mb2derpck.streamlit.app/** in your browser.** Demo Video
+
 ### Docker (One Command)
 
 ```bash
