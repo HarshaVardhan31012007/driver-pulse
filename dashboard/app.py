@@ -13,6 +13,7 @@ import plotly.figure_factory as ff
 import sys
 import os
 from datetime import datetime, timedelta
+import time
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -20,6 +21,19 @@ warnings.filterwarnings('ignore')
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.config import config
+
+# Clear Streamlit cache to force reload
+st.cache_data.clear()
+st.cache_resource.clear()
+
+# Force reload of modules and ensure time is available
+import time
+import builtins
+builtins.time = time
+
+# Global availability check
+if 'time' not in globals():
+    time = __import__('time')
 
 # Hackathon-winning page configuration
 st.set_page_config(
@@ -64,6 +78,11 @@ st.markdown("""
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
     }
     
     .metric-container::before {
@@ -135,17 +154,55 @@ st.markdown("""
     }
     
     .stTabs [data-baseweb="tab-list"] {
-        background-color: #f8f9fa;
-        border-radius: 0.5rem;
-        padding: 0.5rem;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 1rem;
+        padding: 1rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        border: 2px solid rgba(102, 126, 234, 0.2);
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
     }
     
     .stTabs [data-baseweb="tab"] {
-        border-radius: 0.25rem;
-        padding: 0.5rem 1rem;
-        font-weight: 500;
-        transition: all 0.2s ease;
+        border-radius: 0.75rem;
+        padding: 1rem 1.5rem;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+        display: block;
+        text-align: center;
+        min-width: 150px;
+        flex: 1;
+    }
+    
+    .stTabs [data-baseweb="tab"]:hover {
+        background: rgba(102, 126, 234, 0.15);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
+        border-color: rgba(102, 126, 234, 0.5);
+    }
+    
+    .stTabs [data-baseweb="tab-list"] button[data-baseweb="tab"][aria-selected="true"] {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        border-color: transparent;
+        display: block;
+        text-align: center;
+    }
+    
+    .stTabs [data-baseweb="tab-list"] button[data-baseweb="tab"][aria-selected="true"]:hover {
+        background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6);
     }
     
     .performance-excellent { 
@@ -222,10 +279,11 @@ st.markdown("""
     }
     
     .highlight-number {
-        font-size: 2.5rem;
+        font-size: 2rem;
         font-weight: 700;
-        line-height: 1;
+        line-height: 1.2;
         margin-bottom: 0.5rem;
+        word-wrap: break-word;
     }
     
     .metric-label {
@@ -248,6 +306,103 @@ st.markdown("""
     .metric-change.negative {
         color: #f5576c;
     }
+/* Responsive Design */
+    @media (max-width: 768px) {
+        .main-header {
+            font-size: 2rem !important;
+        }
+        
+        .metric-container {
+            padding: 1rem !important;
+            margin: 0.5rem 0 !important;
+        }
+        
+        .highlight-number {
+            font-size: 1.5rem !important;
+        }
+        
+        .stTabs [data-baseweb="tab-list"] {
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+        }
+        
+        .stTabs [data-baseweb="tab"] {
+            min-width: 100% !important;
+            padding: 0.75rem 1rem !important;
+            font-size: 0.9rem !important;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .main-header {
+            font-size: 1.5rem !important;
+        }
+        
+        .highlight-number {
+            font-size: 1.2rem !important;
+        }
+        
+        .metric-label {
+            font-size: 0.8rem !important;
+        }
+        
+        .stTabs [data-baseweb="tab"] {
+            font-size: 0.8rem !important;
+            padding: 0.5rem 0.75rem !important;
+        }
+    }
+    
+    /* Interactive Elements */
+    .interactive-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 2px solid transparent;
+    }
+    
+    .interactive-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        border-color: #667eea;
+    }
+    
+    .pulse-animation {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(102, 126, 234, 0.3);
+        border-radius: 50%;
+        border-top-color: #667eea;
+        animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    /* Enhanced Charts */
+    .chart-container {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        margin: 1rem 0;
+        transition: all 0.3s ease;
+    }
+    
+    .chart-container:hover {
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -258,6 +413,12 @@ class DriverPulseDashboard:
     def __init__(self):
         self.data = {}
         self.insights = {}
+        self.filters = {
+            'time_range': 'All Time',
+            'driver_filter': 'All Drivers',
+            'safety_rating': 'All Ratings',
+            'auto_refresh': False
+        }
         self.advice = []
         self.load_data()
     
@@ -306,12 +467,14 @@ class DriverPulseDashboard:
                 'duration_minutes': ['sum', 'mean'],
                 'total_events': ['sum', 'mean'],
                 'stress_score': ['mean', 'max', 'std'],
-                'earnings_velocity': ['mean', 'max'],
+                'earnings_per_minute': ['mean', 'max'],
                 'safety_rating': lambda x: x.mode().iloc[0] if not x.mode().empty else 'UNKNOWN'
             }).round(2)
             
             # Flatten column names
             driver_metrics.columns = ['_'.join(col).strip() for col in driver_metrics.columns]
+            # Rename the lambda column to be more readable
+            driver_metrics = driver_metrics.rename(columns={'safety_rating_<lambda>': 'safety_rating_mode'})
             driver_metrics = driver_metrics.reset_index()
             
             # Calculate additional performance metrics
@@ -379,9 +542,9 @@ class DriverPulseDashboard:
                     'priority': 'high',
                     'category': 'earnings',
                     'title': '🎯 Maximize Your Earnings Potential',
-                    'message': f"Top drivers earn ${high_earners['earnings_per_hour'].mean():.2f}/hour. Focus on peak hours and optimal routes to match their performance.",
+                    'message': f"Top drivers earn ₹{high_earners['earnings_per_hour'].mean() * 83:.2f}/hour. Focus on peak hours and optimal routes to match their performance.",
                     'actionable': True,
-                    'target_improvement': f"+${(high_earners['earnings_per_hour'].mean() - metrics['earnings_per_hour'].mean()):.2f}/hour"
+                    'target_improvement': f"+₹{(high_earners['earnings_per_hour'].mean() - metrics['earnings_per_hour'].mean()) * 83:.2f}/hour"
                 })
             
             # Safety improvement advice
@@ -415,91 +578,403 @@ class DriverPulseDashboard:
     
     def render_key_metrics(self):
         """Render key metrics with enhanced visualizations."""
-        st.markdown('<h2 style="color: #495057; margin-bottom: 1.5rem;">📊 Performance Overview</h2>', unsafe_allow_html=True)
+        # Enhanced section header with proper alignment
+        st.markdown('''
+        <div style="
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+            box-shadow: 0 10px 30px rgba(40, 167, 69, 0.3);
+            text-align: center;
+            width: 100%;
+            display: block;
+        ">
+            <h2 style="
+                color: white; 
+                margin: 0; 
+                font-size: 2.2rem;
+                font-weight: 700;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+                display: block;
+                text-align: center;
+                line-height: 1.3;
+            ">
+                <span style="font-size: 2.8rem; display: block; margin-bottom: 0.5rem;">📊</span>
+                Performance Overview
+            </h2>
+            <p style="
+                color: rgba(255,255,255,0.9);
+                margin: 0.8rem 0 0 0;
+                font-size: 1.1rem;
+                font-weight: 400;
+                display: block;
+                text-align: center;
+                line-height: 1.4;
+            ">
+                Real-time driver metrics and key performance indicators
+            </p>
+        </div>
+        ''', unsafe_allow_html=True)
         
-        # Create impressive metric cards
+        # Create impressive metric cards with interactive features
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
             st.markdown(f"""
-            <div class="metric-container">
-                <div class="highlight-number">${self.insights.get('total_earnings', 0):,.0f}</div>
+            <div class="metric-container interactive-card" onclick="this.classList.toggle('pulse-animation')">
+                <div class="highlight-number">₹{self.insights.get('total_earnings', 0) * 83:,.0f}</div>
                 <div class="metric-label">Total Earnings</div>
                 <div class="metric-change positive">↑ 12.5% vs last period</div>
+                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #6c757d;">
+                    💡 Click to animate
+                </div>
             </div>
             """, unsafe_allow_html=True)
         
         with col2:
             st.markdown(f"""
-            <div class="metric-container">
+            <div class="metric-container interactive-card" onclick="this.classList.toggle('pulse-animation')">
                 <div class="highlight-number">{self.insights.get('avg_earnings_per_hour', 0):.1f}</div>
-                <div class="metric-label">Avg $/Hour</div>
+                <div class="metric-label">Avg ₹/Hour</div>
                 <div class="metric-change positive">↑ 8.3% improvement</div>
+                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #6c757d;">
+                    💡 Click to animate
+                </div>
             </div>
             """, unsafe_allow_html=True)
         
         with col3:
             st.markdown(f"""
-            <div class="metric-container">
+            <div class="metric-container interactive-card" onclick="this.classList.toggle('pulse-animation')">
                 <div class="highlight-number">{self.insights.get('total_events', 0):,.0f}</div>
                 <div class="metric-label">Total Events</div>
                 <div class="metric-change negative">↓ 15.2% reduction</div>
+                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #6c757d;">
+                    💡 Click to animate
+                </div>
             </div>
             """, unsafe_allow_html=True)
         
         with col4:
             safety_score = 10 - min(self.insights.get('avg_stress_score', 0), 10)
             st.markdown(f"""
-            <div class="metric-container">
+            <div class="metric-container interactive-card" onclick="this.classList.toggle('pulse-animation')">
                 <div class="highlight-number">{safety_score:.1f}</div>
                 <div class="metric-label">Safety Score</div>
                 <div class="metric-change positive">↑ 5.7% better</div>
+                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #6c757d;">
+                    💡 Click to animate
+                </div>
             </div>
             """, unsafe_allow_html=True)
     
     def render_interactive_charts(self):
         """Render interactive charts with advanced visualizations."""
-        st.markdown('<h2 style="color: #495057; margin: 2rem 0 1.5rem 0;">📈 Advanced Analytics</h2>', unsafe_allow_html=True)
+        # Enhanced header with better visibility
+        st.markdown('''
+        <div style="
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            width: 100%;
+            display: block;
+            text-align: center;
+            min-height: 120px;
+        ">
+            <h2 style="
+                color: white; 
+                margin: 0; 
+                font-size: 2.5rem;
+                font-weight: 700;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+                display: block;
+                text-align: center;
+                line-height: 1.2;
+            ">
+                <span style="font-size: 3rem; display: block; margin-bottom: 0.5rem;">📈</span>
+                Advanced Analytics Dashboard
+            </h2>
+            <p style="
+                color: rgba(255,255,255,0.9);
+                margin: 1rem 0 0 0;
+                font-size: 1.1rem;
+                font-weight: 400;
+                display: block;
+                text-align: center;
+                line-height: 1.4;
+            ">
+                Deep insights into driver performance, safety metrics, and earnings patterns
+            </p>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        # Always visible tab navigation with Streamlit native components
+        st.markdown('''
+        <div style="
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(102, 126, 234, 0.1);
+        ">
+            <h3 style="
+                color: #495057; 
+                margin: 0 0 1rem 0; 
+                font-size: 1.8rem;
+                font-weight: 600;
+                text-align: center;
+                display: block;
+            ">
+                📊 Explore Analytics
+            </h3>
+            <p style="
+                color: #6c757d; 
+                margin: 0 0 1.5rem 0; 
+                font-size: 1.1rem;
+                text-align: center;
+                font-style: italic;
+                display: block;
+            ">
+                Click any button below to explore detailed analysis
+            </p>
+        </div>
+        ''', unsafe_allow_html=True)
         
         if 'driver_metrics' in self.data:
             metrics = self.data['driver_metrics']
             
-            # Create tabs for different chart types
-            tab1, tab2, tab3, tab4 = st.tabs(['🎯 Performance Analysis', '⚠️ Event Patterns', '💰 Earnings Trends', '🏆 Leaderboard'])
+            # Initialize session state for active tab
+            if 'active_tab' not in st.session_state:
+                st.session_state.active_tab = 0
             
-            with tab1:
-                # Performance scatter plot
-                fig = px.scatter(
-                    metrics, 
-                    x='earnings_per_hour', 
-                    y='stress_score_mean',
-                    size='overall_score',
-                    color='safety_rating',
-                    hover_name='driver_id',
-                    title='Driver Performance Matrix',
+            # Create centered navigation buttons
+            col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
+            
+            with col1:
+                if st.button('🎯 Performance Analysis', key='perf_tab', width='stretch', help='View Performance Analysis'):
+                    st.session_state.active_tab = 0
+                    st.rerun()
+            
+            with col2:
+                if st.button('⚡ Event Patterns', key='events_tab', width='stretch', help='View Event Patterns'):
+                    st.session_state.active_tab = 1
+                    st.rerun()
+            
+            with col3:
+                if st.button('💎 Earnings Trends', key='earnings_tab', width='stretch', help='View Earnings Trends'):
+                    st.session_state.active_tab = 2
+                    st.rerun()
+            
+            with col4:
+                if st.button('🏆 Leaderboard', key='lead_tab', width='stretch', help='View Leaderboard'):
+                    st.session_state.active_tab = 3
+                    st.rerun()
+            
+            # Display content based on active tab
+            if st.session_state.active_tab == 0:
+                st.markdown('<div id="performance"></div>', unsafe_allow_html=True)
+                self.render_performance_analysis(metrics)
+            elif st.session_state.active_tab == 1:
+                st.markdown('<div id="events"></div>', unsafe_allow_html=True)
+                self.render_event_patterns()
+            elif st.session_state.active_tab == 2:
+                st.markdown('<div id="earnings"></div>', unsafe_allow_html=True)
+                self.render_earnings_trends()
+            elif st.session_state.active_tab == 3:
+                st.markdown('<div id="leaderboard"></div>', unsafe_allow_html=True)
+                self.render_leaderboard()
+        else:
+            st.error("❌ Driver data not available!")
+            st.write("Available data keys:", list(self.data.keys()) if self.data else "No data loaded")
+            st.write("Please run the data pipeline first: `python main.py --generate-sample-data`")
+    
+    def render_performance_analysis(self, metrics):
+        """Render performance analysis tab content."""
+        # Enhanced section heading
+        st.markdown('''
+        <div style="
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
+            width: 100%;
+            display: block;
+            text-align: center;
+        ">
+            <h3 style="
+                color: white; 
+                margin: 0; 
+                font-size: 1.8rem;
+                font-weight: 600;
+                display: block;
+                text-align: center;
+                line-height: 1.3;
+            ">
+                <span style="font-size: 2.2rem; display: block; margin-bottom: 0.5rem;">🎯</span>
+                Performance Analysis
+            </h3>
+            <p style="color: rgba(255,255,255,0.9); margin: 0.5rem 0 0 0; font-size: 1rem; display: block; text-align: center;">
+                Comprehensive driver performance metrics and insights
+            </p>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        # Performance scatter plot
+        st.markdown('''
+        <div class="chart-container">
+            <h4 style="margin: 0 0 1rem 0; color: #495057; font-size: 1.2rem;">
+                📊 Driver Performance Matrix
+            </h4>
+            <p style="margin: 0 0 1rem 0; color: #6c757d; font-size: 0.9rem;">
+                Interactive scatter plot - Click and drag to zoom, hover for details
+            </p>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        fig = px.scatter(
+            metrics, 
+            x='earnings_per_hour', 
+            y='stress_score_mean',
+            size='overall_score',
+            color='safety_rating_mode',
+            hover_name='driver_id',
+            title='Driver Performance Matrix',
+            labels={
+                'earnings_per_hour': 'Earnings (₹/hour)',
+                'stress_score_mean': 'Stress Score',
+                'overall_score': 'Overall Score',
+                'safety_rating_mode': 'Safety Rating'
+            },
+            color_discrete_map={
+                'EXCELLENT': '#28a745',
+                'GOOD': '#17a2b8', 
+                'FAIR': '#ffc107',
+                'POOR': '#dc3545'
+            }
+        )
+        
+        fig.update_layout(
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            title_font_size=16,
+            showlegend=True,
+            height=500,
+            hovermode='closest'
+        )
+        
+        st.plotly_chart(fig, width='stretch')
+        
+        # Performance distribution
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            earnings_dist = self.insights.get('earnings_distribution', {})
+            fig_earnings = go.Figure(data=[
+                go.Bar(x=list(earnings_dist.keys()), y=list(earnings_dist.values()))
+            ])
+            fig_earnings.update_layout(
+                title='Earnings Distribution',
+                xaxis_title='Earnings Range (₹/hour)',
+                yaxis_title='Number of Drivers',
+                height=400
+            )
+            st.plotly_chart(fig_earnings, width='stretch')
+        
+        with col2:
+            safety_counts = metrics['safety_rating_mode'].value_counts()
+            fig_safety = go.Figure(data=[
+                go.Pie(labels=safety_counts.index, values=safety_counts.values)
+            ])
+            fig_safety.update_layout(
+                title='Safety Rating Distribution',
+                height=400
+            )
+            st.plotly_chart(fig_safety, width='stretch')
+    
+    def render_earnings_trends(self):
+        """Render earnings trends tab content."""
+        st.markdown('''
+        <div style="
+            background: linear-gradient(135deg, #ffc107 0%, #ff6b6b 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+            box-shadow: 0 6px 20px rgba(255, 193, 7, 0.3);
+            width: 100%;
+            display: block;
+            text-align: center;
+        ">
+            <h3 style="
+                color: white; 
+                margin: 0; 
+                font-size: 1.8rem;
+                font-weight: 600;
+                display: block;
+                text-align: center;
+                line-height: 1.3;
+            ">
+                <span style="font-size: 2.2rem; display: block; margin-bottom: 0.5rem;">💎</span>
+                Earnings Trends
+            </h3>
+            <p style="color: rgba(255,255,255,0.9); margin: 0.5rem 0 0 0; font-size: 1rem; display: block; text-align: center;">
+                Track earnings patterns and velocity metrics over time
+            </p>
+        </div>
+        ''', unsafe_allow_html=True)
+        
+        if 'trips' in self.data:
+            trips = self.data['trips'].copy()
+            trips['date'] = pd.to_datetime(trips['start_time']).dt.date
+            
+            # Daily earnings trend
+            daily_earnings = trips.groupby('date').agg({
+                'fare': 'sum',
+                'earnings_per_minute': 'mean',
+                'trip_id': 'count'
+            }).reset_index()
+            
+            fig = px.line(
+                daily_earnings,
+                x='date',
+                y='fare',
+                title='Daily Earnings Trend',
+                labels={'fare': 'Total Earnings ($)', 'date': 'Date'}
+            )
+            fig.update_traces(line_color='#ffc107')
+            st.plotly_chart(fig, width='stretch')
+            
+            # Earnings velocity analysis
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                fig_velocity = px.scatter(
+                    trips,
+                    x='duration_minutes',
+                    y='earnings_per_minute',
+                    color='total_events',
+                    title='Earnings Velocity Analysis',
                     labels={
-                        'earnings_per_hour': 'Earnings ($/hour)',
-                        'stress_score_mean': 'Stress Score',
-                        'overall_score': 'Overall Score',
-                        'safety_rating': 'Safety Rating'
-                    },
-                    color_discrete_map={
-                        'EXCELLENT': '#28a745',
-                        'GOOD': '#17a2b8', 
-                        'FAIR': '#ffc107',
-                        'POOR': '#dc3545'
+                        'duration_minutes': 'Duration (minutes)',
+                        'earnings_per_minute': 'Earnings per minute ($)',
+                        'total_events': 'Events Count'
                     }
                 )
-                
-                fig.update_layout(
-                    plot_bgcolor='rgba(0,0,0,0)',
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    title_font_size=16,
-                    showlegend=True,
-                    height=500
+                st.plotly_chart(fig_velocity, width='stretch')
+            
+            with col2:
+                top_earners = trips.groupby('driver_id')['fare'].sum().sort_values(ascending=False).head(10)
+                fig_top = px.bar(
+                    x=top_earners.index,
+                    y=top_earners.values,
+                    title='Top 10 Earners',
+                    labels={'x': 'Driver ID', 'y': 'Total Earnings ($)'}
                 )
-                
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig_top, width='stretch')
                 
                 # Performance distribution
                 col1, col2 = st.columns(2)
@@ -520,7 +995,7 @@ class DriverPulseDashboard:
                         showlegend=False,
                         height=300
                     )
-                    st.plotly_chart(fig_earnings, use_container_width=True)
+                    st.plotly_chart(fig_earnings, width='stretch')
                 
                 with col2:
                     safety_dist = self.insights.get('safety_distribution', {})
@@ -538,7 +1013,7 @@ class DriverPulseDashboard:
                         showlegend=False,
                         height=300
                     )
-                    st.plotly_chart(fig_safety, use_container_width=True)
+                    st.plotly_chart(fig_safety, width='stretch')
             
             with tab2:
                 self.render_event_patterns()
@@ -555,16 +1030,17 @@ class DriverPulseDashboard:
             events = self.data['events'].copy()
             
             # Event timeline
+            # Use fixed size for all points to avoid confidence issues
             fig_timeline = px.scatter(
                 events,
                 x='timestamp',
-                y='event_type',
+                y='event_label',
                 color='severity',
-                size='confidence',
+                size=[10] * len(events),  # Fixed size for all points
                 title='Event Timeline Analysis',
                 labels={
                     'timestamp': 'Time',
-                    'event_type': 'Event Type',
+                    'event_label': 'Event Type',
                     'severity': 'Severity',
                     'confidence': 'Confidence'
                 },
@@ -581,10 +1057,10 @@ class DriverPulseDashboard:
                 title_font_size=16
             )
             
-            st.plotly_chart(fig_timeline, use_container_width=True)
+            st.plotly_chart(fig_timeline, width='stretch')
             
             # Event frequency analysis
-            event_counts = events['event_type'].value_counts()
+            event_counts = events['event_label'].value_counts()
             
             fig_frequency = go.Figure(data=[
                 go.Pie(
@@ -601,7 +1077,7 @@ class DriverPulseDashboard:
                 showlegend=True
             )
             
-            st.plotly_chart(fig_frequency, use_container_width=True)
+            st.plotly_chart(fig_frequency, width='stretch')
     
     def render_earnings_trends(self):
         """Render earnings trend analysis."""
@@ -613,7 +1089,7 @@ class DriverPulseDashboard:
             daily_earnings = trips.groupby('date').agg({
                 'fare': 'sum',
                 'driver_id': 'count',
-                'earnings_velocity': 'mean'
+                'earnings_per_minute': 'mean'
             }).reset_index()
             
             fig_trends = make_subplots(
@@ -638,7 +1114,7 @@ class DriverPulseDashboard:
             fig_trends.add_trace(
                 go.Scatter(
                     x=daily_earnings['date'],
-                    y=daily_earnings['earnings_velocity'],
+                    y=daily_earnings['earnings_per_minute'],
                     mode='lines+markers',
                     name='Earnings Velocity',
                     line=dict(color='#764ba2', width=3)
@@ -652,7 +1128,7 @@ class DriverPulseDashboard:
                 title_text="Earnings Performance Analysis"
             )
             
-            st.plotly_chart(fig_trends, use_container_width=True)
+            st.plotly_chart(fig_trends, width='stretch')
     
     def render_leaderboard(self):
         """Render interactive leaderboard."""
@@ -662,10 +1138,10 @@ class DriverPulseDashboard:
             # Top performers table
             st.markdown('### 🏆 Top Performers')
             
-            # Format metrics for display
-            display_metrics = metrics[['driver_id', 'overall_score', 'earnings_per_hour', 'stress_score_mean', 'safety_rating']].copy()
+            # Format metrics for display - use safety_rating_mode
+            display_metrics = metrics[['driver_id', 'overall_score', 'earnings_per_hour', 'stress_score_mean', 'safety_rating_mode']].copy()
             display_metrics.columns = ['Driver ID', 'Overall Score', 'Earnings/Hour', 'Stress Score', 'Safety Rating']
-            display_metrics['Earnings/Hour'] = display_metrics['Earnings/Hour'].apply(lambda x: f"${x:.2f}")
+            display_metrics['Earnings/Hour'] = display_metrics['Earnings/Hour'].apply(lambda x: f"₹{x * 83:.2f}")
             display_metrics['Overall Score'] = display_metrics['Overall Score'].apply(lambda x: f"{x:.1f}/100")
             
             # Add performance badges
@@ -682,6 +1158,101 @@ class DriverPulseDashboard:
             display_metrics['Performance'] = display_metrics['Overall Score'].str.extract(r'(\d+\.\d+)')[0].astype(float).apply(get_performance_badge)
             
             st.markdown(display_metrics.to_html(escape=False, index=False), unsafe_allow_html=True)
+            
+            # Driver selection for detailed view
+            st.markdown('### 👤 Driver Details')
+            selected_driver = st.selectbox(
+                'Select a driver to view detailed information:',
+                options=metrics['driver_id'].tolist(),
+                format_func=lambda x: f'Driver {x}'
+            )
+            
+            if st.button('View Driver Details', key='view_driver'):
+                st.session_state.selected_driver = selected_driver
+                
+            # Show driver details if selected
+            if 'selected_driver' in st.session_state and st.session_state.selected_driver:
+                self.render_driver_details(st.session_state.selected_driver)
+    
+    def render_driver_details(self, driver_id):
+        """Render detailed information for a specific driver."""
+        if 'driver_metrics' in self.data and 'trips' in self.data:
+            driver_metrics = self.data['driver_metrics']
+            trips = self.data['trips']
+            
+            # Get driver data
+            driver_data = driver_metrics[driver_metrics['driver_id'] == driver_id].iloc[0]
+            driver_trips = trips[trips['driver_id'] == driver_id]
+            
+            st.markdown(f'---')
+            st.markdown(f'## 🚗 Driver {driver_id} - Detailed Profile')
+            
+            # Key metrics in columns
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                st.metric('Overall Score', f"{driver_data['overall_score']:.1f}/100")
+            
+            with col2:
+                st.metric('Earnings/Hour', f"₹{driver_data['earnings_per_hour'] * 83:.2f}")
+            
+            with col3:
+                st.metric('Stress Score', f"{driver_data['stress_score_mean']:.1f}")
+            
+            with col4:
+                st.metric('Safety Rating', driver_data['safety_rating_mode'])
+            
+            # Performance charts
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                # Earnings trend
+                driver_trips['date'] = pd.to_datetime(driver_trips['start_time']).dt.date
+                daily_earnings = driver_trips.groupby('date').agg({
+                    'fare': 'sum',
+                    'earnings_per_minute': 'mean'
+                }).reset_index()
+                
+                fig = px.line(
+                    daily_earnings,
+                    x='date',
+                    y='fare',
+                    title=f'Daily Earnings - Driver {driver_id}',
+                    labels={'fare': 'Earnings ($)', 'date': 'Date'}
+                )
+                fig.update_traces(line_color='#667eea')
+                st.plotly_chart(fig, width='stretch')
+            
+            with col2:
+                # Trip performance
+                fig = px.scatter(
+                    driver_trips,
+                    x='duration_minutes',
+                    y='fare',
+                    size='total_events',
+                    title=f'Trip Performance - Driver {driver_id}',
+                    labels={
+                        'duration_minutes': 'Duration (minutes)',
+                        'fare': 'Fare ($)',
+                        'total_events': 'Events'
+                    }
+                )
+                st.plotly_chart(fig, width='stretch')
+            
+            # Recent trips table
+            st.markdown('### 📋 Recent Trips')
+            recent_trips = driver_trips.sort_values('start_time', ascending=False).head(10)
+            
+            display_trips = recent_trips[['start_time', 'fare', 'duration_minutes', 'total_events', 'stress_score']].copy()
+            display_trips.columns = ['Start Time', 'Fare ($)', 'Duration (min)', 'Events', 'Stress Score']
+            display_trips['Fare ($)'] = display_trips['Fare ($)'].apply(lambda x: f"₹{x * 83:.2f}")
+            
+            st.dataframe(display_trips, width='stretch')
+            
+            # Close button
+            if st.button('Close Driver Details', key='close_driver'):
+                st.session_state.selected_driver = None
+                st.rerun()
     
     def render_ai_insights(self):
         """Render AI-powered insights and recommendations."""
@@ -780,7 +1351,7 @@ class DriverPulseDashboard:
                     height=500
                 )
                 
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
                 
                 # Detailed comparison table
                 st.markdown('### 📊 Detailed Comparison')
@@ -788,7 +1359,7 @@ class DriverPulseDashboard:
                 comparison_data = []
                 for metric, (v1, v2) in comparison_metrics.items():
                     if metric == 'Earnings/Hour':
-                        v1_fmt, v2_fmt = f"${v1:.2f}", f"${v2:.2f}"
+                        v1_fmt, v2_fmt = f"₹{v1 * 83:.2f}", f"₹{v2 * 83:.2f}"
                     else:
                         v1_fmt, v2_fmt = f"{v1:.2f}", f"{v2:.2f}"
                     
@@ -807,22 +1378,23 @@ class DriverPulseDashboard:
                     })
                 
                 comparison_df = pd.DataFrame(comparison_data)
-                st.dataframe(comparison_df, use_container_width=True)
+                st.dataframe(comparison_df, width='stretch')
     
     def run(self):
-        """Run the enhanced dashboard."""
+        """Run the dashboard without sidebar and filters."""
+
+        # Render main dashboard sections
         self.render_header()
         self.render_key_metrics()
         self.render_interactive_charts()
         self.render_ai_insights()
         self.render_driver_comparison()
-        
-        # Footer
+
         st.markdown('---')
-        st.markdown('<p style="text-align: center; color: #6c757d;">🏆 Driver Pulse - Hackathon Winning Solution | Built with ❤️ by Team Velocity</p>', unsafe_allow_html=True)
-
-
-# Initialize and run the dashboard
+        st.markdown(
+            '<p style="text-align: center; color: #6c757d;">🏆 Driver Pulse - Hackathon Solution | Built with ❤️ by Team Velocity</p>',
+            unsafe_allow_html=True
+        )
 if __name__ == "__main__":
     dashboard = DriverPulseDashboard()
     dashboard.run()
