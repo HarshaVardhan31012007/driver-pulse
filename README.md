@@ -234,18 +234,10 @@ def classify_event_with_confidence(features, event_type):
 
 ---
 
-## 🤝 Team Velocity
+## 🤝 Team Velocity- Group 11
 
-A diverse team of engineers passionate about improving driver livelihoods through technology.
+Uber Hackathon **Team Group 11** consists of **Kunam HarshaVardhan Reddy, Vidhi Chordia, and Garima**. All team members contributed collaboratively across the entire project including system design, signal processing, backend development, data analysis, and building the interactive dashboard to deliver the Driver Pulse solution.
 
-| Role | Focus Area |
-|---|---|
-| Lead Developer | Signal processing & ML algorithms |
-| Backend Engineer | API design & data architecture |
-| Frontend Developer | Dashboard & user experience |
-| Data Scientist | Analytics & predictive modeling |
-
----
 
 ## 📄 License
 
