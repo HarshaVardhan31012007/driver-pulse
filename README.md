@@ -282,16 +282,6 @@ The architecture is designed to scale from a single driver to a global fleet.
 - ✅ **Adaptive learning** — thresholds adjust to individual driving patterns
 - ✅ **Predictive analytics** — earnings forecasting with confidence intervals
 
----
-
-## 🚀 Future Roadmap
-
-- 🗺️ Real-time GPS integration & route optimization
-- 🧠 Deep learning models for event classification
-- 📱 Native iOS / Android mobile apps
-- 🚛 Fleet management & multi-driver analytics
-- 🎮 Gamification with achievements & leaderboards
-- 🔗 Uber / Lyft / DoorDash API integrations
 
 ---
 
