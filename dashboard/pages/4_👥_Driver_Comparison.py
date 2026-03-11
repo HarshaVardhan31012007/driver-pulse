@@ -82,20 +82,7 @@ def main():
             help='Select up to 5 drivers for detailed comparison'
         )
     
-    with col2:
-        st.markdown('''
-        <div style="
-            background: #e3f2fd;
-            padding: 1rem;
-            border-radius: 10px;
-            border-left: 4px solid #2196f3;
-        ">
-            <h4 style="margin: 0 0 0.5rem 0; color: #1565c0;">💡 Tip</h4>
-            <p style="margin: 0; color: #1976d2; font-size: 0.9rem;">
-                Select 2-5 drivers to see detailed side-by-side comparisons
-            </p>
-        </div>
-        ''', unsafe_allow_html=True)
+    
     
     if len(selected_drivers) < 2:
         st.warning('Please select at least 2 drivers to compare.')
