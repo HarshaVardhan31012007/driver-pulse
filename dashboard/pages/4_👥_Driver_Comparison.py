@@ -318,16 +318,21 @@ def main():
     
         # DRIVER 1
         with col1:
-            st.markdown(f"""
-            <div style="
-                background: linear-gradient(135deg, #28a745, #20c997);
-                padding:1.5rem;
-                border-radius:15px;
-                color:white;
-                text-align:center;">
-                <h3>🚗 Driver {driver1}</h3>
-            </div>
-            """, unsafe_allow_html=True)
+            st.markdown(
+                f"""
+                <div style="
+                    background:#1e1e1e;
+                    color:white;
+                    padding:1rem;
+                    border-radius:10px;
+                    margin-bottom:0.5rem;
+                    border-left:4px solid #28a745;
+                    font-size:16px;">
+                    <strong>{metric}:</strong> {value}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
     
             for metric, (v1, v2) in metrics_comparison.items():
     
@@ -345,16 +350,21 @@ def main():
     
         # DRIVER 2
         with col2:
-            st.markdown(f"""
-            <div style="
-                background: linear-gradient(135deg, #17a2b8, #138496);
-                padding:1.5rem;
-                border-radius:15px;
-                color:white;
-                text-align:center;">
-                <h3>🚙 Driver {driver2}</h3>
-            </div>
-            """, unsafe_allow_html=True)
+            st.markdown(
+                f"""
+                <div style="
+                    background:#1e1e1e;
+                    color:white;
+                    padding:1rem;
+                    border-radius:10px;
+                    margin-bottom:0.5rem;
+                    border-left:4px solid #17a2b8;
+                    font-size:16px;">
+                    <strong>{metric}:</strong> {value}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
     
             for metric, (v1, v2) in metrics_comparison.items():
     
