@@ -299,132 +299,140 @@ def main():
             st.plotly_chart(fig_trend, width='stretch')
     
     # Head-to-head analysis
-    if len(selected_drivers) == 2:
-        st.markdown('### ⚔️ Head-to-Head Analysis')
-        
-        driver1, driver2 = selected_drivers
-        d1_data = comparison_data[comparison_data['driver_id'] == driver1].iloc[0]
-        d2_data = comparison_data[comparison_data['driver_id'] == driver2].iloc[0]
-        
-        # Metric comparisons
-        metrics_comparison = {
-            'Overall Score': (d1_data['overall_score'], d2_data['overall_score']),
-            'Earnings/Hour': (d1_data['earnings_per_hour'], d2_data['earnings_per_hour']),
-            'Stress Score': (d1_data['stress_score_mean'], d2_data['stress_score_mean']),
-            'Safety Score': (10 - d1_data['stress_score_mean'], 10 - d2_data['stress_score_mean'])
-        }
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown(f'''
-            <div style="
-                background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-                padding: 1.5rem;
-                border-radius: 15px;
-                color: white;
-                text-align: center;
-            ">
-                <h3>Driver {driver1}</h3>
-            </div>
-            ''', unsafe_allow_html=True)
-            
-            for metric, (v1, v2) in metrics_comparison.items():
-                if metric == 'Earnings/Hour':
-                    v1_fmt = f"₹{v1 * 83:.2f}"
-                else:
-                    v1_fmt = f"{v1:.2f}"
-                
-                st.markdown(f'''
-                <div style="
-                    background: #f8f9fa;
-                    padding: 1rem;
-                    border-radius: 10px;
-                    margin-bottom: 0.5rem;
-                    border-left: 4px solid #28a745;
-                ">
-                    <strong>{metric}:</strong> {v1_fmt}
-                </div>
-                ''', unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown(f'''
-            <div style="
-                background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
-                padding: 1.5rem;
-                border-radius: 15px;
-                color: white;
-                text-align: center;
-            ">
-                <h3>Driver {driver2}</h3>
-            </div>
-            ''', unsafe_allow_html=True)
-            
-            for metric, (v1, v2) in metrics_comparison.items():
-                if metric == 'Earnings/Hour':
-                    v2_fmt = f"₹{v2 * 83:.2f}"
-                else:
-                    v2_fmt = f"{v2:.2f}"
-                
-                st.markdown(f'''
-                <div style="
-                    background: #f8f9fa;
-                    padding: 1rem;
-                    border-radius: 10px;
-                    margin-bottom: 0.5rem;
-                    border-left: 4px solid #17a2b8;
-                ">
-                    <strong>{metric}:</strong> {v2_fmt}
-                </div>
-                ''', unsafe_allow_html=True)
-        
-        # Winner determination
-        st.markdown('### 🏆 Winner Analysis')
-        
-        wins = {'Driver 1': 0, 'Driver 2': 0, 'Tie': 0}
-        
-        for metric, (v1, v2) in metrics_comparison.items():
-            if metric == 'Stress Score':
-                if v1 < v2:
-                    wins['Driver 1'] += 1
-                elif v2 < v1:
-                    wins['Driver 2'] += 1
-                else:
-                    wins['Tie'] += 1
-            else:
-                if v1 > v2:
-                    wins['Driver 1'] += 1
-                elif v2 > v1:
-                    wins['Driver 2'] += 1
-                else:
-                    wins['Tie'] += 1
-        
-        winner = max(wins, key=wins.get)
-        
-        if winner == 'Driver 1':
-            winner_text = f"🏆 Driver {driver1} wins!"
-            winner_color = '#28a745'
-        elif winner == 'Driver 2':
-            winner_text = f"🏆 Driver {driver2} wins!"
-            winner_color = '#17a2b8'
-        else:
-            winner_text = "🤝 It's a tie!"
-            winner_color = '#ffc107'
-        
-        st.markdown(f'''
+    # Head-to-head analysis
+if len(selected_drivers) == 2:
+    st.markdown('### ⚔️ Head-to-Head Analysis')
+
+    driver1, driver2 = selected_drivers
+
+    d1_data = comparison_data[comparison_data['driver_id'] == driver1].iloc[0]
+    d2_data = comparison_data[comparison_data['driver_id'] == driver2].iloc[0]
+
+    # Safe metric extraction (prevents empty boxes)
+    metrics_comparison = {
+        "Overall Score": (
+            float(d1_data.get("overall_score", 0)),
+            float(d2_data.get("overall_score", 0))
+        ),
+        "Earnings/Hour": (
+            float(d1_data.get("earnings_per_hour", 0)),
+            float(d2_data.get("earnings_per_hour", 0))
+        ),
+        "Stress Score": (
+            float(d1_data.get("stress_score_mean", 0)),
+            float(d2_data.get("stress_score_mean", 0))
+        ),
+        "Safety Score": (
+            10 - float(d1_data.get("stress_score_mean", 0)),
+            10 - float(d2_data.get("stress_score_mean", 0))
+        )
+    }
+
+    col1, col2 = st.columns(2)
+
+    # DRIVER 1
+    with col1:
+        st.markdown(f"""
         <div style="
-            background: linear-gradient(135deg, {winner_color}22 0%, {winner_color}11 100%);
-            padding: 2rem;
-            border-radius: 15px;
-            text-align: center;
-            border: 2px solid {winner_color};
-        ">
-            <h2 style="color: {winner_color}; margin: 0;">{winner_text}</h2>
-            <p style="margin: 1rem 0 0 0; color: #495057;">
-                Driver {driver1}: {wins['Driver 1']} wins | Driver {driver2}: {wins['Driver 2']} wins | Ties: {wins['Tie']}
-            </p>
+            background: linear-gradient(135deg, #28a745, #20c997);
+            padding:1.5rem;
+            border-radius:15px;
+            color:white;
+            text-align:center;">
+            <h3>🚗 Driver {driver1}</h3>
         </div>
-        ''', unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
+
+        for metric, (v1, v2) in metrics_comparison.items():
+
+            if metric == "Earnings/Hour":
+                value = f"₹{v1*83:.2f}"
+            else:
+                value = f"{v1:.2f}"
+
+            st.markdown(
+                f"<div style='background:#f8f9fa;padding:1rem;border-radius:10px;margin-bottom:0.5rem;border-left:4px solid #28a745;'>"
+                f"<strong>{metric}:</strong> {value}"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+
+    # DRIVER 2
+    with col2:
+        st.markdown(f"""
+        <div style="
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            padding:1.5rem;
+            border-radius:15px;
+            color:white;
+            text-align:center;">
+            <h3>🚙 Driver {driver2}</h3>
+        </div>
+        """, unsafe_allow_html=True)
+
+        for metric, (v1, v2) in metrics_comparison.items():
+
+            if metric == "Earnings/Hour":
+                value = f"₹{v2*83:.2f}"
+            else:
+                value = f"{v2:.2f}"
+
+            st.markdown(
+                f"<div style='background:#f8f9fa;padding:1rem;border-radius:10px;margin-bottom:0.5rem;border-left:4px solid #17a2b8;'>"
+                f"<strong>{metric}:</strong> {value}"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+
+    # Winner analysis
+    st.markdown("### 🏆 Winner Analysis")
+
+    wins = {"Driver 1": 0, "Driver 2": 0, "Tie": 0}
+
+    for metric, (v1, v2) in metrics_comparison.items():
+
+        if metric == "Stress Score":
+            if v1 < v2:
+                wins["Driver 1"] += 1
+            elif v2 < v1:
+                wins["Driver 2"] += 1
+            else:
+                wins["Tie"] += 1
+        else:
+            if v1 > v2:
+                wins["Driver 1"] += 1
+            elif v2 > v1:
+                wins["Driver 2"] += 1
+            else:
+                wins["Tie"] += 1
+
+    winner = max(wins, key=wins.get)
+
+    if winner == "Driver 1":
+        winner_text = f"🏆 Driver {driver1} wins!"
+        winner_color = "#28a745"
+    elif winner == "Driver 2":
+        winner_text = f"🏆 Driver {driver2} wins!"
+        winner_color = "#17a2b8"
+    else:
+        winner_text = "🤝 It's a tie!"
+        winner_color = "#ffc107"
+
+    st.markdown(f"""
+    <div style="
+        background: linear-gradient(135deg, {winner_color}22, {winner_color}11);
+        padding:2rem;
+        border-radius:15px;
+        text-align:center;
+        border:2px solid {winner_color};">
+        <h2 style="color:{winner_color};">{winner_text}</h2>
+        <p>
+        Driver {driver1}: {wins['Driver 1']} wins |
+        Driver {driver2}: {wins['Driver 2']} wins |
+        Ties: {wins['Tie']}
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Export comparison
     st.markdown('### 📤 Export Comparison')
