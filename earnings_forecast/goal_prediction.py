@@ -35,17 +35,17 @@ class GoalPredictor:
 
         progress = (earnings / goal) * 100 if goal > 0 else 0
 
-        # 🎯 STATUS
+        # 🎯 STATUS LOGIC
         if progress >= 100:
             status = GoalStatus.GOAL_ALREADY_ACHIEVED
 
         elif hours < self.MIN_HOURS_FOR_PREDICTION:
             status = GoalStatus.INSUFFICIENT_DATA
 
-        elif progress > 70:
+        elif progress >= 70:
             status = GoalStatus.GOAL_ON_TRACK
 
-        elif progress > 40:
+        elif progress >= 40:
             status = GoalStatus.GOAL_AT_RISK
 
         else:
@@ -54,17 +54,14 @@ class GoalPredictor:
         # 🔥 SMART GOAL SUGGESTION
         suggested_goal = self._suggest_goal(data)
 
-        # 💡 RECOMMENDATIONS
-        rec = self._recommend(status)
-
         return {
             "driver_id": driver_id,
             "daily_goal": goal,
             "current_earnings": earnings,
-            "progress_%": round(progress, 1),
+            "progress_percentage": round(progress, 1),  # ✅ FIXED NAME
             "goal_status": status.value,
             "recommended_goal": suggested_goal,
-            "recommendations": rec
+            "recommendations": self._recommend(status)
         }
 
     def _suggest_goal(self, data):
@@ -83,7 +80,7 @@ class GoalPredictor:
     def _recommend(self, status):
 
         if status == GoalStatus.GOAL_ALREADY_ACHIEVED:
-            return "🎉 Goal done! Earn bonus"
+            return "🎉 Goal achieved! Earn bonus"
 
         elif status == GoalStatus.GOAL_ON_TRACK:
             return "✅ Maintain pace"
