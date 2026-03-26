@@ -29,7 +29,7 @@ def main():
         goals_df, velocity_metrics, forecasts
     )
 
-    # 🎨 NICE UI
+    # 🎨 UI CARDS
     st.subheader("📊 Driver Goal Insights")
 
     for _, row in predictions.iterrows():
@@ -38,7 +38,8 @@ def main():
             "GOAL_ON_TRACK": "green",
             "GOAL_AT_RISK": "orange",
             "GOAL_LIKELY_MISSED": "red",
-            "GOAL_ALREADY_ACHIEVED": "blue"
+            "GOAL_ALREADY_ACHIEVED": "blue",
+            "INSUFFICIENT_DATA": "gray"
         }.get(row['goal_status'], "gray")
 
         st.markdown(f"""
@@ -51,7 +52,7 @@ def main():
         ">
             <h4>🚗 Driver {row['driver_id']}</h4>
             <p><b>Status:</b> {row['goal_status']}</p>
-            <p><b>Progress:</b> {row['progress_%']}%</p>
+            <p><b>Progress:</b> {row['progress_percentage']}%</p>
             <p><b>Goal:</b> ₹{row['daily_goal']}</p>
             <p><b>Suggested Goal:</b> ₹{row['recommended_goal']}</p>
             <p><b>Advice:</b> {row['recommendations']}</p>
@@ -60,12 +61,9 @@ def main():
 
     st.divider()
 
+    # 📋 TABLE
     st.subheader("📋 Raw Data")
     st.dataframe(predictions, use_container_width=True)
-
-
-if __name__ == "__main__":
-    main()
 
 
 if __name__ == "__main__":
