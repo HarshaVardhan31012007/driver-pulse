@@ -34,14 +34,17 @@ def main():
 
     for _, row in predictions.iterrows():
 
+        status = row.get('goal_status', 'UNKNOWN')
+        progress = row.get('progress_percentage', 0)
+    
         color = {
             "GOAL_ON_TRACK": "green",
             "GOAL_AT_RISK": "orange",
             "GOAL_LIKELY_MISSED": "red",
             "GOAL_ALREADY_ACHIEVED": "blue",
             "INSUFFICIENT_DATA": "gray"
-        }.get(row['goal_status'], "gray")
-
+        }.get(status, "gray")
+    
         st.markdown(f"""
         <div style="
             padding:15px;
@@ -50,12 +53,12 @@ def main():
             background-color:#111;
             border-left:5px solid {color};
         ">
-            <h4>🚗 Driver {row['driver_id']}</h4>
-            <p><b>Status:</b> {row['goal_status']}</p>
-            <p><b>Progress:</b> {row['progress_percentage']}%</p>
-            <p><b>Goal:</b> ₹{row['daily_goal']}</p>
-            <p><b>Suggested Goal:</b> ₹{row['recommended_goal']}</p>
-            <p><b>Advice:</b> {row['recommendations']}</p>
+            <h4>🚗 Driver {row.get('driver_id')}</h4>
+            <p><b>Status:</b> {status}</p>
+            <p><b>Progress:</b> {progress}%</p>
+            <p><b>Goal:</b> ₹{row.get('daily_goal')}</p>
+            <p><b>Suggested Goal:</b> ₹{row.get('recommended_goal')}</p>
+            <p><b>Advice:</b> {row.get('recommendations')}</p>
         </div>
         """, unsafe_allow_html=True)
 
