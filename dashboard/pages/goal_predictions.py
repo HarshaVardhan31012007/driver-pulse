@@ -1,16 +1,16 @@
 import streamlit as st
 import pandas as pd
-from goal_predictor import GoalPredictor
+
+# ✅ FIXED IMPORT
+from earnings_forecast.goal_prediction import GoalPredictor
 
 
 def main():
-    st.set_page_config(page_title="Goal Predictions", layout="wide")
-
-    st.title("🎯 Driver Goal Predictions")
+    st.title("🎯 Goal Predictions")
 
     predictor = GoalPredictor()
 
-    # 🔥 DUMMY DATA (IMPORTANT — so it ALWAYS works)
+    # ✅ TEMP DATA (so it works 100%)
     goals_df = pd.DataFrame({
         "driver_id": [101, 102, 103],
         "daily_goal": [2000, 2500, 1800]
@@ -24,7 +24,7 @@ def main():
         "avg_earnings_per_hour": [280, 350, 220]
     })
 
-    forecasts = pd.DataFrame()  # not used for now
+    forecasts = pd.DataFrame()
 
     predictions = predictor.predict_goal_achievement(
         goals_df, velocity_metrics, forecasts
