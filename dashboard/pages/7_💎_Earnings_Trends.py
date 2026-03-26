@@ -22,6 +22,10 @@ from utils.config import config
 # Import dashboard class
 from app import DriverPulseDashboard
 
+# Import goal prediction
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from earnings_forecast.goal_prediction import GoalPredictor, GoalStatus
+
 def main():
     """Earnings trends page with detailed financial analysis."""
     
@@ -564,6 +568,331 @@ def main():
                 file_name=f'earnings_data_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv',
                 mime='text/csv'
             )
+
+    # ─────────────────────────────────────────────────────────
+    # GOAL PREDICTION SECTION
+    # ─────────────────────────────────────────────────────────
+    st.markdown('---')
+    st.markdown('''
+    <div style="
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 16px;
+        margin: 1.5rem 0;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    ">
+        <h2 style="color: white; margin: 0; font-size: 2rem; font-weight: 700;">
+            🎯 Goal Prediction & Achievement Forecast
+        </h2>
+        <p style="color: rgba(255,255,255,0.9); margin: 0.75rem 0 0 0; font-size: 1.1rem;">
+            Linear regression–powered forecasting · Achievement probability · Personalised recommendations
+        </p>
+    </div>
+    ''', unsafe_allow_html=True)
+
+    # Build synthetic goal data from actual trip data
+    if 'driver_metrics' in dashboard.data and not dashboard.data['driver_metrics'].empty:
+        driver_metrics = dashboard.data['driver_metrics'].copy()
+
+        # ── Settings sidebar ────────────────────────────────
+        st.sidebar.markdown('---')
+        st.sidebar.markdown('### 🎯 Goal Settings')
+        daily_goal_usd = st.sidebar.slider(
+            'Daily Earnings Goal ($)',
+            min_value=50, max_value=500, value=150, step=10,
+            help='Set a daily earnings target for all drivers'
+        )
+        daily_goal_inr = daily_goal_usd * 83
+
+        st.sidebar.markdown(f'**Daily Goal: ₹{daily_goal_inr:,}** (${daily_goal_usd})')
+
+        # ── Assemble goals_df ────────────────────────────────
+        goals_df = pd.DataFrame({
+            'driver_id': driver_metrics['driver_id'],
+            'daily_goal': daily_goal_usd
+        })
+
+        # ── Assemble velocity_metrics ────────────────────────
+        velocity_metrics = pd.DataFrame({
+            'driver_id':              driver_metrics['driver_id'],
+            'current_velocity':       driver_metrics['earnings_per_hour'],
+            'avg_earnings_per_hour':  driver_metrics['earnings_per_hour'],
+            'current_hours_worked':   (driver_metrics['duration_minutes_sum'] / 60).clip(upper=12),
+            'current_earnings':       driver_metrics['fare_sum'].clip(upper=daily_goal_usd * 1.5)
+        })
+
+        # ── Assemble minimal forecasts_df ────────────────────
+        forecasts_df = pd.DataFrame({
+            'driver_id':         driver_metrics['driver_id'],
+            'predicted_earnings': driver_metrics['earnings_per_hour'] * 8
+        })
+
+        # ── Run GoalPredictor ────────────────────────────────
+        predictor = GoalPredictor()
+        predictions = predictor.predict_goal_achievement(goals_df, velocity_metrics, forecasts_df)
+        goal_metrics = predictor.calculate_goal_metrics(predictions)
+
+        if not predictions.empty:
+
+            # ── Summary KPI strip ────────────────────────────
+            st.markdown('### 📊 Goal Achievement Summary')
+            k1, k2, k3, k4 = st.columns(4)
+
+            total_drivers_pred = goal_metrics.get('total_drivers', 0)
+            achieved   = goal_metrics.get('drivers_achieved_goal', 0)
+            on_track   = goal_metrics.get('drivers_on_track', 0)
+            avg_prob   = goal_metrics.get('average_achievement_probability', 0)
+            avg_prog   = goal_metrics.get('average_progress_percentage', 0)
+
+            with k1:
+                st.metric('👥 Drivers Analysed', total_drivers_pred)
+            with k2:
+                st.metric('🏆 Goal Achieved', achieved,
+                          delta=f"{achieved/total_drivers_pred*100:.0f}%" if total_drivers_pred else None)
+            with k3:
+                st.metric('✅ On Track', on_track,
+                          delta=f"{on_track/total_drivers_pred*100:.0f}%" if total_drivers_pred else None)
+            with k4:
+                st.metric('📈 Avg Achievement Prob', f"{avg_prob*100:.1f}%",
+                          delta=f"Avg progress {avg_prog:.1f}%")
+
+            # ── Status distribution chart ────────────────────
+            st.markdown('### 🥧 Goal Status Distribution')
+            col_chart1, col_chart2 = st.columns(2)
+
+            status_counts = predictions['goal_status'].value_counts().reset_index()
+            status_counts.columns = ['Status', 'Count']
+
+            STATUS_COLORS = {
+                GoalStatus.GOAL_ALREADY_ACHIEVED.value: '#28a745',
+                GoalStatus.GOAL_ON_TRACK.value:         '#17a2b8',
+                GoalStatus.GOAL_AT_RISK.value:          '#ffc107',
+                GoalStatus.GOAL_LIKELY_MISSED.value:    '#dc3545',
+                GoalStatus.INSUFFICIENT_DATA.value:     '#6c757d',
+            }
+            STATUS_LABELS = {
+                GoalStatus.GOAL_ALREADY_ACHIEVED.value: '🏆 Achieved',
+                GoalStatus.GOAL_ON_TRACK.value:         '✅ On Track',
+                GoalStatus.GOAL_AT_RISK.value:          '⚠️ At Risk',
+                GoalStatus.GOAL_LIKELY_MISSED.value:    '❌ Likely Missed',
+                GoalStatus.INSUFFICIENT_DATA.value:     '📊 Insufficient Data',
+            }
+            status_counts['Label']  = status_counts['Status'].map(STATUS_LABELS).fillna(status_counts['Status'])
+            status_counts['Color']  = status_counts['Status'].map(STATUS_COLORS).fillna('#adb5bd')
+
+            with col_chart1:
+                fig_pie = go.Figure(go.Pie(
+                    labels=status_counts['Label'],
+                    values=status_counts['Count'],
+                    marker_colors=status_counts['Color'],
+                    hole=0.45,
+                    textinfo='label+percent',
+                    hovertemplate='%{label}: %{value} drivers<extra></extra>'
+                ))
+                fig_pie.update_layout(
+                    title='Driver Goal Status Breakdown',
+                    showlegend=False,
+                    height=380
+                )
+                st.plotly_chart(fig_pie, width='stretch')
+
+            with col_chart2:
+                # Achievement probability histogram
+                fig_hist = px.histogram(
+                    predictions,
+                    x='achievement_probability',
+                    nbins=20,
+                    title='Achievement Probability Distribution',
+                    labels={'achievement_probability': 'Probability', 'count': 'Drivers'},
+                    color_discrete_sequence=['#667eea']
+                )
+                fig_hist.add_vline(x=0.8, line_dash='dash', line_color='#28a745',
+                                   annotation_text='On-Track threshold (80%)',
+                                   annotation_position='top right')
+                fig_hist.add_vline(x=0.5, line_dash='dash', line_color='#ffc107',
+                                   annotation_text='At-Risk threshold (50%)',
+                                   annotation_position='top right')
+                fig_hist.update_layout(height=380)
+                st.plotly_chart(fig_hist, width='stretch')
+
+            # ── Linear Regression Forecast Chart ─────────────
+            st.markdown('### 📉 Linear Regression Earnings Forecast')
+            try:
+                from sklearn.linear_model import LinearRegression
+                import numpy as np
+
+                # Build time-series of daily earnings from trips data
+                trips_lr = dashboard.data['trips'].copy()
+                trips_lr['date_ord'] = pd.to_datetime(trips_lr['start_time']).map(
+                    lambda d: d.toordinal()
+                )
+                daily_lr = trips_lr.groupby('date_ord').agg(fare=('fare', 'sum')).reset_index()
+                daily_lr = daily_lr.sort_values('date_ord')
+
+                if len(daily_lr) >= 3:
+                    X = daily_lr[['date_ord']].values
+                    y = daily_lr['fare'].values
+
+                    model = LinearRegression()
+                    model.fit(X, y)
+
+                    # Forecast next 14 days
+                    last_ord   = int(daily_lr['date_ord'].max())
+                    future_ords = np.array([[last_ord + i] for i in range(1, 15)])
+                    future_preds = model.predict(future_ords)
+
+                    from datetime import date as date_cls
+                    actual_dates  = [date_cls.fromordinal(int(o)) for o in daily_lr['date_ord']]
+                    future_dates  = [date_cls.fromordinal(int(o)) for o in future_ords.flatten()]
+
+                    fig_lr = go.Figure()
+                    fig_lr.add_trace(go.Scatter(
+                        x=actual_dates, y=y * 83,
+                        mode='lines+markers',
+                        name='Actual Earnings (₹)',
+                        line=dict(color='#fd7e14', width=2),
+                        marker=dict(size=5)
+                    ))
+                    fig_lr.add_trace(go.Scatter(
+                        x=future_dates, y=future_preds * 83,
+                        mode='lines+markers',
+                        name='Forecast (₹)',
+                        line=dict(color='#667eea', width=2, dash='dash'),
+                        marker=dict(size=5, symbol='diamond')
+                    ))
+                    fig_lr.add_hline(
+                        y=daily_goal_inr,
+                        line_dash='dot', line_color='#28a745', line_width=2,
+                        annotation_text=f'Daily Goal ₹{daily_goal_inr:,}',
+                        annotation_position='bottom right'
+                    )
+                    fig_lr.update_layout(
+                        title='Fleet Total Daily Earnings — Actual vs Linear Regression Forecast',
+                        xaxis_title='Date',
+                        yaxis_title='Total Fleet Earnings (₹)',
+                        height=420,
+                        legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1)
+                    )
+                    st.plotly_chart(fig_lr, width='stretch')
+
+                    r2 = model.score(X, y)
+                    slope_daily = model.coef_[0] * 83
+                    trend_label = '📈 Improving' if slope_daily > 0 else '📉 Declining'
+                    st.info(f"**Model R² = {r2:.3f}** · Trend: {trend_label} "
+                            f"({'+'if slope_daily>=0 else ''}{slope_daily:.2f} ₹/day slope)")
+                else:
+                    st.info('Not enough daily data points for regression forecast (need ≥ 3 days).')
+
+            except ImportError:
+                st.warning('scikit-learn not installed — regression forecast unavailable.')
+
+            # ── Per-driver goal table ─────────────────────────
+            st.markdown('### 📋 Per-Driver Goal Prediction Table')
+
+            display_pred = predictions[[
+                'driver_id', 'daily_goal', 'current_earnings',
+                'progress_percentage', 'goal_status', 'achievement_probability',
+                'earnings_needed', 'recommended_hours_remaining'
+            ]].copy()
+
+            display_pred['daily_goal']       = display_pred['daily_goal'].apply(lambda x: f'₹{x*83:,.0f}')
+            display_pred['current_earnings'] = display_pred['current_earnings'].apply(lambda x: f'₹{x*83:,.0f}')
+            display_pred['earnings_needed']  = display_pred['earnings_needed'].apply(lambda x: f'₹{x*83:,.0f}')
+            display_pred['progress_percentage']        = display_pred['progress_percentage'].apply(lambda x: f'{x:.1f}%')
+            display_pred['achievement_probability']    = display_pred['achievement_probability'].apply(lambda x: f'{x*100:.1f}%')
+            display_pred['recommended_hours_remaining'] = display_pred['recommended_hours_remaining'].apply(
+                lambda x: f'{x:.1f} hrs' if x != float('inf') else 'N/A'
+            )
+            display_pred['goal_status'] = display_pred['goal_status'].map(STATUS_LABELS).fillna(display_pred['goal_status'])
+
+            display_pred.columns = [
+                'Driver ID', 'Daily Goal', 'Current Earnings', 'Progress',
+                'Goal Status', 'Achievement Prob.', 'Earnings Needed', 'Hours Needed'
+            ]
+
+            st.dataframe(display_pred, width='stretch')
+
+            # ── Per-driver recommendations ───────────────────
+            st.markdown('### 💡 Driver Recommendations')
+
+            # Allow drilling into a specific driver
+            driver_ids = predictions['driver_id'].tolist()
+            if selected_driver != 'All Drivers' and selected_driver in driver_ids:
+                rec_driver_id = selected_driver
+            else:
+                rec_driver_id = st.selectbox(
+                    'Select a driver to see personalised recommendations:',
+                    driver_ids, key='goal_rec_driver'
+                )
+
+            if rec_driver_id:
+                driver_pred = predictions[predictions['driver_id'] == rec_driver_id].iloc[0]
+                status_val  = driver_pred['goal_status']
+                prob_val    = driver_pred['achievement_probability']
+                prog_val    = driver_pred['progress_percentage']
+                recs        = driver_pred['recommendations']
+
+                status_color = STATUS_COLORS.get(status_val, '#6c757d')
+                status_label = STATUS_LABELS.get(status_val, status_val)
+
+                # Probability gauge
+                fig_gauge = go.Figure(go.Indicator(
+                    mode='gauge+number+delta',
+                    value=prob_val * 100,
+                    title={'text': f'Goal Achievement Probability — {rec_driver_id}', 'font': {'size': 16}},
+                    number={'suffix': '%', 'font': {'size': 32}},
+                    delta={'reference': 80, 'suffix': '% vs on-track threshold'},
+                    gauge={
+                        'axis':  {'range': [0, 100], 'tickwidth': 1},
+                        'bar':   {'color': status_color},
+                        'steps': [
+                            {'range': [0, 50],  'color': '#ffeaea'},
+                            {'range': [50, 80], 'color': '#fff3cd'},
+                            {'range': [80, 100],'color': '#d4edda'},
+                        ],
+                        'threshold': {
+                            'line':  {'color': '#28a745', 'width': 3},
+                            'thickness': 0.75,
+                            'value': 80
+                        }
+                    }
+                ))
+                fig_gauge.update_layout(height=300)
+                st.plotly_chart(fig_gauge, width='stretch')
+
+                # Progress bar + status badge
+                st.markdown(f'''
+                <div style="background:#f8f9fa; border-radius:12px; padding:1.2rem; margin-bottom:1rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
+                        <span style="font-weight:600; color:#343a40;">Progress toward daily goal</span>
+                        <span style="background:{status_color}; color:white; padding:0.25rem 0.9rem;
+                                     border-radius:20px; font-size:0.85rem; font-weight:600;">
+                            {status_label}
+                        </span>
+                    </div>
+                    <div style="background:#dee2e6; border-radius:8px; height:18px; overflow:hidden;">
+                        <div style="background:{status_color}; width:{min(prog_val,100):.1f}%;
+                                    height:100%; border-radius:8px; transition:width 0.4s;"></div>
+                    </div>
+                    <div style="text-align:right; margin-top:0.4rem; color:#6c757d; font-size:0.9rem;">
+                        {prog_val:.1f}% complete · ₹{driver_pred["current_earnings"]*83:,.0f} of ₹{driver_pred["daily_goal"]*83:,.0f}
+                    </div>
+                </div>
+                ''', unsafe_allow_html=True)
+
+                # Recommendations list
+                for rec in recs:
+                    st.markdown(f'''
+                    <div style="background:white; border-left:4px solid {status_color};
+                                border-radius:8px; padding:0.9rem 1.2rem; margin-bottom:0.6rem;
+                                box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                        {rec}
+                    </div>
+                    ''', unsafe_allow_html=True)
+
+    else:
+        st.warning('Driver metrics not available. Please ensure trip data has been loaded.')
 
 if __name__ == "__main__":
     main()
